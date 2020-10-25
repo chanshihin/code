@@ -1,0 +1,55 @@
+import json
+import boto3
+import urllib
+import decimal
+import logging
+from botocore.exceptions import ClientError
+
+def create_presigned_url(bucket_name, object_name, expiration=3600):
+   
+
+    # Generate a presigned URL for the S3 object
+    s3_client = boto3.client('s3')
+    try:
+        response = s3_client.generate_presigned_url('get_object',
+                                                    Params={'Bucket': bucket_name,
+                                                            'Key': object_name},
+                                                    ExpiresIn=expiration)
+    except ClientError as e:
+        logging.error(e)
+        return None
+
+    # The response contains the presigned URL
+    return response
+# Helper class to convert a DynamoDB item to JSON.
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, decimal.Decimal):
+            if o % 1 > 0:
+                return float(o)
+            else:
+                return int(o)
+        return super(DecimalEncoder, self).default(o)
+def lambda_handler(event, context):
+    url = create_presigned_url('BUCKET_NAME', 'OBJECT_NAME')
+    bucket="comp3122ass2-17048242d"
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table('images')
+    result = table.scan()
+	temp=[]
+    for i in result['Items']:
+        i['labels'].sort(key=lambda datum: (-datum['confidence'], datum['name']))
+        images = {
+            'name' : i['name'],
+            'labels' : i['labels']
+        }
+        print(images)
+        temp.append(images)
+    print(temp)
+    export = {
+        'images': temp
+        
+    }
+    return{
+        'body' : json.dumps(export,cls=DecimalEncoder)
+    }

@@ -1,0 +1,130 @@
+import flask
+from flask import jsonify
+from flask import request
+import sqlite3
+import json
+
+app = flask.Flask(__name__)
+app.config["DEBUG"] = True
+
+@app.route('/bookmarking/users', methods=['GET'])
+def getusers():
+	conn = sqlite3.connect("bookmarks.db")
+	cur = conn.cursor()
+	bb= cur.execute('SELECT users_id, users_name from Users Order BY user_id ASC;')
+	user=[]
+	for row in bb.fetchall():
+            user.append({
+                "user_id": row[0],
+                "user_name": row[1]
+            })
+		conn.close()
+		return jsonify(user),200
+
+@app.route('/bookmarking/users', methods=['POST'])
+def addusers():
+	try :
+		user = json.loads(request.data)
+		conn = sqlite3.connect("bookmarks.db")
+		cur = conn.cursor()
+		cur.execute('SELECT COUNT(*) FROM Users WHERE user_id = ? OR user_name = ?;', (user["user_id"], user["user_name"]))
+		count = cur.fetchone()[0]
+		if count > 0:
+			 return jsonify({
+				"resons": [
+				{
+				 "message": "User already exists"
+				}
+			   ]
+			}), 400
+		cur.execute('INSERT INTO Users(user_id, user_name) VALUES(?,?);', (user["user_id"], user["user_name"]))
+		conn.commit()
+		conn.close()
+		return jsonify(user), 201
+	except :
+		return jsonify({
+            "error"
+        }), 500
+		conn.close()
+
+@app.route('/bookmarking/<user_id>', methods=['DELETE'])
+def removeuser(user_id):
+	conn = sqlite3.connect("bookmarks.db")
+	cur = conn.cursor()
+	cur.execute('SELECT COUNT(*) FROM Users WHERE user_id = ?;', (user_id,) )
+	count = cur.fetchone()[0]
+	if count !=1:
+		return jsonify({
+			"reasons": [
+			{
+				"message": "User not found"
+			}
+		   ]
+		}),404
+	else:
+		cur.execute('DELETE FROM Users WHERE user_id = ?', (user_id,))
+        conn.commit()
+		return "", 204
+        conn.close()
+        
+		
+@app.route('/bookmarking/bookmarks', methods=['GET'])
+def getbookmark():
+	conn = sqlite3.connect("bookmarks.db")
+	cur = conn.cursor()
+	bb= cur.execute('SELECT url , tags , text , user_id  from Bookmarks Order BY user_id ASC;')
+	user=[]
+	for row in bb.fetchall():
+            user.append({
+                "url": row[0],
+                "tags": row[1],
+				"text" : row[2],
+				"user_id": row[3]
+            })
+		conn.close()
+		return jsonify(user),200
+		
+@app.route('/bookmarking/bookmarks/<user_id>', methods=['GET'])
+def getbookmarkuser(user_id):
+	try:
+		conn = sqlite3.connect("bookmarks.db")
+		cur = conn.cursor()
+		bb= cur.execute('SELECT url , tags , text , user_id  from Bookmarks WHERE user_id = ? GROUP BY user_id Order BY url ASC;',(user_id),)
+		conn.close()
+		return jsonify(bb), 200
+	except:
+		return jsonify({
+			"reasons": [
+			{				
+			"message": "User not found"
+			}
+		   ]
+		}), 500
+		conn.close()
+@app.route('/bookmarking/bookmarks/<user_id>/<url>', methods=['GET'])
+def gettargetbookmark(user_id,tags):
+	try:
+		conn = sqlite3.connect("bookmarks.db")
+		cur = conn.cursor()
+		cur.execute('SELECT COUNT(*) FROM Users WHERE user_id = ?;', (user_id,) )
+		count = cur.fetchone()[0]
+		if count !=1:
+			return jsonify({
+				"reasons": [
+				{
+					"message": "User not found"
+				}
+			   ]
+			}),404
+			conn.close()
+	except:
+		cur.execute('SELECT tags FROM Bookmarks WHERE user_id = ?;', (user_id,) )
+		return jsonify(cur),200
+		conn.close()
+
+@app.route('/bookmarking/<user_id>/<user_id>', methods=['POST'])
+def addbookmark(user_id):
+	try:
+		conn = sqlite3.connect("bookmarks.db")
+		cur = conn.cursor()
+app.run()

@@ -1,0 +1,42 @@
+def move(s1,s2):
+    if s1[0] != s2[0] and s1[1] != s2 [1] or s1[3] != s2 [3] and s1[0] != s2[0] or s1[3] != s2[3] and s1[1] != s2[1] :
+        print(s1+"  "+s2+" Illegal move")
+    else:
+        if s2[0] == s2[1] and s2[2] != s2[0] or  s2 [1] == s2[3] and s2[2] != s2[1]:
+            print(s1+"  "+s2+" Illegal move")
+        else:  
+            if s1[0] == s1[1] and s1[2] != s1[0] or  s1 [1] == s1[3] and s1[2] != s1[1]:
+                print(s1+"  "+s2+" Illegal move")
+            else:
+                if s1[2] == "E":
+                    if s1[0] != s2[0]:
+                        print(s1 +" "+ s2+" "+"man and cabbage move from east to west")
+                    if s1[1] != s2[1]:
+                        print(s1 +" "+ s2+" "+"man and goat move from east to west")
+                    if s1[3] != s2[3]:
+                        print(s1 +" "+ s2+" "+"man and wolf move from east to west")
+                    if s1[0] == s2[0] and s1[1] == s2[1] and s1[3] == s2[3]:
+                        print(s1 +" "+ s2+" "+"man move from east to west")
+                if s1[2] == "W":
+                    if s1[0] != s2[0]:
+                        print(s1 +" "+ s2+" "+"man and cabbage move from west to east")
+                    if s1[1] != s2[1]:
+                        print(s1 +" "+ s2+" "+"man and goat move from west to east")
+                    if s1[3] != s2[3]:
+                        print(s1 +" "+ s2+" "+"man and wolf move from west to east")
+                    if s1[0] == s2[0] and s1[1] == s2[1] and s1[3] == s2[3]:
+                        print(s1 +" "+ s2+" "+"man move from west to east")
+        
+def main():
+    sol =("EEEE","EWWE","EWEE","WWWE","WEEE","WEWW","WEEW","WWWW")
+    for i in range(1,len(sol)):
+        move(sol[i-1],sol[i])
+    print()
+    sol =("EEEE","EWWE","EWEE","EWWE","EWEE","WWWE","WEEE","WEWW","WEEW","WWWW")
+    for i in range(1,len(sol)):
+        move(sol[i-1],sol[i])
+    print()
+    sol =("EEEE","EWWE","EWEE","WWWE","WWEE","WWWE","EWEE","WWWW")
+    for i in range(1,len(sol)):
+        move(sol[i-1],sol[i])
+main(
